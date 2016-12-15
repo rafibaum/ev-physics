@@ -8,6 +8,8 @@ volatile unsigned long ticks = 0;
 long distance = 0;
 int index = 3;
 
+bool exitSetup = false;
+
 void setup() {
   // put your setup code here, to run once:
   pinMode(motor1, OUTPUT);
@@ -16,7 +18,7 @@ void setup() {
   Serial.begin(9600);
   lcd.begin(16,2);
   
-  while(true) {
+  while(!exitSetup) {
     int buttonVal=getButton();
     switch(buttonVal) {
       case 0:
@@ -31,6 +33,9 @@ void setup() {
       case 3:
         index++;
         break;
+      case 4:
+        exitSetup = true;
+        break;
     }
     index = constrain(index, 0, 4);
     distance = constrain(distance, 0, 9999);
@@ -39,7 +44,7 @@ void setup() {
     printNum(index, distance);
     while(buttonVal>-1&&getButton() > -1) {
       Serial.println("Button: " + String(getButton()));
-      delay(5);
+      delay(20);
     }
     delay(50);
   }
