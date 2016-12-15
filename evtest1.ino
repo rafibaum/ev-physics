@@ -5,7 +5,8 @@ const byte motor1 = 11;
 const byte encPort = 2;
 volatile unsigned long ticks = 0;
 
-const long distance = 3000-125;
+long distance = 0;
+int index = 3;
 
 void setup() {
   // put your setup code here, to run once:
@@ -13,6 +14,35 @@ void setup() {
   pinMode(encPort, INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(encPort), tick, CHANGE);
   Serial.begin(9600);
+  lcd.begin(16,2);
+  
+  while(true) {
+    int buttonVal=getButton();
+    switch(buttonVal) {
+      case 0:
+        index--;
+        break;
+      case 1:
+        distance += pow(10, index);
+        break;
+      case 2:
+        distance -= pow(10, index);
+        break;
+      case 3:
+        index++;
+        break;
+    }
+    index = constrain(index, 0, 4);
+    distance = constrain(distance, 0, 9999);
+    //Serial.println("Index: " + String(index));
+    //Serial.println("Distance: " + String(distance));
+    printNum(index, distance);
+    while(buttonVal>-1&&getButton() > -1) {
+      Serial.println("Button: " + String(getButton()));
+      delay(5);
+    }
+    delay(50);
+  }
 }
 
 void loop() {
@@ -36,7 +66,8 @@ int getButton()
   static int NUM_KEYS=5;
   static int adc_key_val[5] ={  
     30, 150, 360, 535, 760     };
-  int k, input;
+  int input;
+  int k;
   input=analogRead(0);
   for (k = 0; k < NUM_KEYS; k++)
   {
@@ -51,3 +82,21 @@ int getButton()
   return k;
 }
 
+void printNum(int a, int b) {
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print(pad(b));
+  lcd.setCursor(3-a, 1);
+  lcd.print("^");
+}
+String pad( int num ) {
+ int currentMax = 10;
+ String res="";
+ for (byte i=1; i<4; i++){
+   if (num < currentMax) {
+     res+="0";
+   }
+   currentMax *= 10;
+ }
+ return res+String(num);
+}
