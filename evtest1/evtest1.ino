@@ -11,6 +11,10 @@ int index = 0;
 
 bool exitSetup = false;
 
+const float circum = 3.141593*6;
+
+int state = 0;
+
 void setup() {
   // put your setup code here, to run once:
   pinMode(motor1, OUTPUT);
@@ -56,16 +60,40 @@ void setup() {
 }
 
 void loop() {
-  if(ticks < distance) {
+  switch(state) {
+    case 0:
+      drive(distance);
+    break;  
+  }
+}
+
+
+void drive(long dist) {
+  if(ticks > dist) {
+    analogWrite(motor1, 0);
+    analogWrite(motor2, 0);
+    state++;
+    ticks = 0;
+  } else {
+    analogWrite(motor1, 255);
+    analogWrite(motor2, 255);
+  }
+}
+
+void turn(short deg) {
+  unsigned long dist = (deg/360)*circum;
+  if(ticks > dist) {
+    analogWrite(motor1, 0);
+    analogWrite(motor2, 0);
+    state++;
+    ticks = 0;
+  } else if(deg > 0) {
     analogWrite(motor1, 255);
     analogWrite(motor2, 255);
   } else {
     analogWrite(motor1, 0);
     analogWrite(motor2, 0);
   }
-  Serial.print("ticks="+String(ticks));
-  Serial.println(",button="+String(getButton()));
-  delay(100);
 }
 
 void tick() {
