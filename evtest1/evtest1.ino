@@ -1,18 +1,20 @@
 #include <LiquidCrystal.h>
 
 LiquidCrystal lcd(8,9,4,5,6,7);
-const byte motor1 = 11;
-const byte encPort = 2;
+const byte motor1 = 44;
+const byte motor2 = 45;
+const byte encPort = 18;
 volatile unsigned long ticks = 0;
 
 long distance = 0;
-int index = 3;
+int index = 0;
 
 bool exitSetup = false;
 
 void setup() {
   // put your setup code here, to run once:
   pinMode(motor1, OUTPUT);
+  pinMode(motor2, OUTPUT);
   pinMode(encPort, INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(encPort), tick, CHANGE);
   Serial.begin(9600);
@@ -37,8 +39,8 @@ void setup() {
         exitSetup = true;
         break;
     }
-    index = constrain(index, 0, 4);
-    distance = constrain(distance, 0, 9999);
+    index = constrain(index, 0, 5);
+    distance = constrain(distance, 0, 99999);
     //Serial.println("Index: " + String(index));
     //Serial.println("Distance: " + String(distance));
     printNum(index, distance);
@@ -48,13 +50,18 @@ void setup() {
     }
     delay(50);
   }
+
+  //DISTANCE CALCULATION HERE
+  distance = (long)(15.675*distance-611.79);
 }
 
 void loop() {
   if(ticks < distance) {
     analogWrite(motor1, 255);
+    analogWrite(motor2, 255);
   } else {
     analogWrite(motor1, 0);
+    analogWrite(motor2, 0);
   }
   Serial.print("ticks="+String(ticks));
   Serial.println(",button="+String(getButton()));
@@ -91,13 +98,13 @@ void printNum(int a, int b) {
   lcd.clear();
   lcd.setCursor(0, 0);
   lcd.print(pad(b));
-  lcd.setCursor(3-a, 1);
+  lcd.setCursor(4-a, 1);
   lcd.print("^");
 }
 String pad( int num ) {
  int currentMax = 10;
  String res="";
- for (byte i=1; i<4; i++){
+ for (byte i=1; i<5; i++){
    if (num < currentMax) {
      res+="0";
    }
