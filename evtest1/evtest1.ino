@@ -13,7 +13,7 @@ int index = 0;
 
 bool exitSetup = false;
 
-const float circum = 3.141593*9*2.54;
+const float circum = 3.141593*9*2.54*15.675;
 
 int state = 0;
 
@@ -26,7 +26,10 @@ void setup() {
   attachInterrupt(digitalPinToInterrupt(encPort2), tick2, CHANGE);
   Serial.begin(9600);
   lcd.begin(16,2);
-  
+
+  pinMode (10,OUTPUT);
+  digitalWrite(10,HIGH);
+  printNum(index,distance);
   while(!exitSetup) {
     int buttonVal=getButton();
     switch(buttonVal) {
@@ -50,25 +53,31 @@ void setup() {
     distance = constrain(distance, 0, 99999);
     //Serial.println("Index: " + String(index));
     //Serial.println("Distance: " + String(distance));
-    printNum(index, distance);
+    //printNum(index, distance);
+    if(buttonVal>-1)
+    printNum(index,distance);
     while(buttonVal>-1&&getButton() > -1) {
-      Serial.println("Button: " + String(getButton()));
+      //Serial.println("Button: " + String(getButton()));
       delay(20);
     }
     delay(50);
   }
 
   ticks=0;
+  ticks2=0;
   //DISTANCE CALCULATION HERE
-  distance = (long)(15.675*1*(distance/2.54)-611.79*1);
+  distance=(long)(5.4374*distance-71.042);
   //printNum(index, distance);
+  lcd.setCursor(0,1);
+  lcd.print("DEG: "+String(distance));
+  digitalWrite(10,LOW);
 }
 
 void loop() {
   switch(state) {
     case 0:
       drive(distance);
-    break;  
+    break;
   }
 }
 
@@ -80,6 +89,9 @@ void drive(long dist) {
     state++;
     ticks = 0;
     ticks2 = 0;
+    digitalWrite(10,HIGH);
+    lcd.setCursor(12, 1);
+    lcd.print("DONE");
   } else {
     analogWrite(motor1, 255);
     analogWrite(motor2, 255);
@@ -87,19 +99,22 @@ void drive(long dist) {
 }
 
 void turn(short deg) {
-  unsigned long dist = (deg/360)*circum;
-  if((ticks+ticks2)/2 > dist) {
+  unsigned long dist = (deg/360.0)*circum;
+  if((ticks+ticks2)/2 > fabs(dist)) {
     analogWrite(motor1, 0);
     analogWrite(motor2, 0);
     state++;
     ticks = 0;
     ticks2 = 0;
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("DONE");
   } else if(deg > 0) {
     analogWrite(motor1, 255);
-    analogWrite(motor2, 255);
+    analogWrite(motor2, 0);
   } else {
     analogWrite(motor1, 0);
-    analogWrite(motor2, 0);
+    analogWrite(motor2, 255);
   }
   //Serial.print("ticks="+String(ticks));
   //Serial.println(",button="+String(getButton()));
