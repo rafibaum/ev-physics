@@ -1,10 +1,10 @@
 #include <LiquidCrystal.h>
 
 LiquidCrystal lcd(8,9,4,5,6,7);
-const byte motor1 = 44;
-const byte motor2 = 45;
-const byte encPort = 18;
-volatile unsigned long ticks = 0;
+const byte rMotor = 44;
+const byte lMotor = 45;
+const byte lEncPort = 18,rEncPort=19;
+volatile unsigned long lTicks = 0,rTicks=0;
 
 long distance = 0;
 int index = 0;
@@ -13,10 +13,13 @@ bool exitSetup = false;
 
 void setup() {
   // put your setup code here, to run once:
-  pinMode(motor1, OUTPUT);
-  pinMode(motor2, OUTPUT);
-  pinMode(encPort, INPUT_PULLUP);
-  attachInterrupt(digitalPinToInterrupt(encPort), tick, CHANGE);
+  pinMode(lMotor, OUTPUT);
+  pinMode(rMotor, OUTPUT);
+  pinMode(lEncPort, INPUT_PULLUP);
+  attachInterrupt(digitalPinToInterrupt(lEncPort), lTick, CHANGE);
+  
+  pinMode(rEncPort, INPUT_PULLUP);
+  attachInterrupt(digitalPinToInterrupt(rEncPort), rTick, CHANGE);
   Serial.begin(9600);
   lcd.begin(16,2);
   
@@ -51,27 +54,32 @@ void setup() {
     delay(50);
   }
 
-  ticks=0;
+  lTicks=0;
+  rTicks=0;
   //DISTANCE CALCULATION HERE
   distance = (long)(15.675*1*(distance/2.54)-611.79*1);
   //printNum(index, distance);
 }
 
 void loop() {
-  if(ticks < distance) {
-    analogWrite(motor1, 255);
-    analogWrite(motor2, 255);
+  if(lTicks < distance) {
+    analogWrite(lMotor, constrain(255+(rTicks-lTicks)*10,0,255));
+    analogWrite(rMotor, constrain(255+(lTicks-rTicks)*10,0,255));
   } else {
-    analogWrite(motor1, 0);
-    analogWrite(motor2, 0);
+    analogWrite(lMotor, 0);
+    analogWrite(rMotor, 0);
   }
   //Serial.print("ticks="+String(ticks));
   //Serial.println(",button="+String(getButton()));
   //delay(100);
 }
 
-void tick() {
-  ticks++;
+void lTick() {
+  lTicks++;
+}
+void rTick()
+{
+  rTicks++;
 }
 
 int getButton()
