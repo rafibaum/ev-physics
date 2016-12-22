@@ -52,7 +52,7 @@ void setup() {
   }
 
   //DISTANCE CALCULATION HERE
-  distance = (long)(15.675*distance-611.79);
+  distance = (long)(15.675*(distance/2.54)-611.79);
 }
 
 void loop() {
