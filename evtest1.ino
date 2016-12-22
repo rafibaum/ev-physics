@@ -1,7 +1,4 @@
 #include <LiquidCrystal.h>
-#include <Wire.h>
-#include <Adafruit_L3GD20_U.h>
-#include <Adafruit_Sensor.h>
 
 LiquidCrystal lcd(8,9,4,5,6,7);
 const byte motor1 = 11;
@@ -17,14 +14,9 @@ int index = 3;
 
 bool exitSetup = false;
 
-Adafruit_L3GD20_Unified gyro = Adafruit_L3GD20_Unified(20);
+const float circum = 3.141593*6;
 
 int state = 0;
-
-unsigned long time = 0;
-unsigned long lastTime = 0;
-
-double gyroAngle = 0;
 
 void setup() {
   // put your setup code here, to run once:
@@ -36,8 +28,6 @@ void setup() {
   attachInterrupt(digitalPinToInterrupt(encPort2), tick2, CHANGE);
   Serial.begin(9600);
   lcd.begin(16,2);
-
-  gyro.enableAutoRange(true);
   
   while(!exitSetup) {
     int buttonVal=getButton();
@@ -72,13 +62,6 @@ void setup() {
 }
 
 void loop() {
-  time = millis();
-  unsigned long loopTime = time-lastTime;
-
-  sensors_event_t event; 
-  gyro.getEvent(&event);
-  gyroAngle += event.gyro.z * (loopTime/1000.0);
-  
   switch(state) {
     case 0:
       drive(distance);
@@ -101,12 +84,17 @@ void drive(long dist) {
 }
 
 void turn(short deg) {
-  double diff = deg-gyroAngle;
-  if(fabs(diff) < 1) return;
-  if(diff > 0) {
+  unsigned long dist = (deg/360)*circum;
+  if(ticks+ticks2 > dist) {
+    analogWrite(motor1, 0);
+    analogWrite(motor2, 0);
+    state++;
+    ticks = 0;
+    ticks2 = 0;
+  } else if(deg > 0) {
     analogWrite(motor1, 255);
     analogWrite(motor2, 0);
-  } else if(diff < 0) {
+  } else {
     analogWrite(motor1, 0);
     analogWrite(motor2, 255);
   }
