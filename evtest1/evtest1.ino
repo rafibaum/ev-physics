@@ -4,12 +4,18 @@ LiquidCrystal lcd(8,9,4,5,6,7);
 const byte motor1 = 44;
 const byte motor2 = 45;
 const byte encPort = 18;
+const byte encPort2 = 19;
 volatile unsigned long ticks = 0;
+volatile unsigned long ticks2 = 0;
 
 long distance = 0;
 int index = 0;
 
 bool exitSetup = false;
+
+const float circum = 3.141593*9*2.54;
+
+int state = 0;
 
 void setup() {
   // put your setup code here, to run once:
@@ -17,6 +23,7 @@ void setup() {
   pinMode(motor2, OUTPUT);
   pinMode(encPort, INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(encPort), tick, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(encPort2), tick2, CHANGE);
   Serial.begin(9600);
   lcd.begin(16,2);
   
@@ -58,7 +65,36 @@ void setup() {
 }
 
 void loop() {
-  if(ticks < distance) {
+  switch(state) {
+    case 0:
+      drive(distance);
+    break;  
+  }
+}
+
+
+void drive(long dist) {
+  if((ticks+ticks2)/2 > dist) {
+    analogWrite(motor1, 0);
+    analogWrite(motor2, 0);
+    state++;
+    ticks = 0;
+    ticks2 = 0;
+  } else {
+    analogWrite(motor1, 255);
+    analogWrite(motor2, 255);
+  }
+}
+
+void turn(short deg) {
+  unsigned long dist = (deg/360)*circum;
+  if((ticks+ticks2)/2 > dist) {
+    analogWrite(motor1, 0);
+    analogWrite(motor2, 0);
+    state++;
+    ticks = 0;
+    ticks2 = 0;
+  } else if(deg > 0) {
     analogWrite(motor1, 255);
     analogWrite(motor2, 255);
   } else {
@@ -72,6 +108,10 @@ void loop() {
 
 void tick() {
   ticks++;
+}
+
+void tick2() {
+  ticks2++;
 }
 
 int getButton()
