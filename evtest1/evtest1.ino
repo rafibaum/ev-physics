@@ -11,7 +11,7 @@ int index = 0;
 
 bool exitSetup = false;
 
-const float circum = 3.141593*6;
+const float circum = 3.141593*9*2.54;
 
 int state = 0;
 
