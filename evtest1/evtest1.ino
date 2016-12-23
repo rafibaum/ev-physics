@@ -37,10 +37,10 @@ void setup() {
         index--;
         break;
       case 1:
-        distance += pow(10, index);
+        distance += power(10, index);
         break;
       case 2:
-        distance -= pow(10, index);
+        distance -= power(10, index);
         break;
       case 3:
         index++;
@@ -169,3 +169,12 @@ String pad( int num ) {
  }
  return res+String(num);
 }
+
+long power(long num, int index) {
+  long number = 1;
+  for(; index > 0; index--) {
+    number *= num;
+  }
+  return number;
+}
+
